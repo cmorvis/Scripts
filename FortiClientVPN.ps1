@@ -195,11 +195,15 @@ if ($ninjaParameter)
                                 $measurementOfTime = "`$measurementOfTime = `"$measurementOfTime`""
                                 $companyName = "`$companyName = `"$companyName`""
                                 $notifyUserVar0 = 'Add-Type -AssemblyName System.Windows.Forms'
-                                $notifyUserVar1 = '$var = "Your machine will reboot in " + $timeBeforeShutdown + " " + $measurementOfTime + ". Would you like to manually restart your computer later?"'
+                                $notifyUserVar1 = '$var = "Your machine will reboot in " + $timeBeforeShutdown + " " + $measurementOfTime + ". Would you like to restart your computer later?"'
                                 $notifyUserVar2 = '$topForm = New-Object System.Windows.Forms.Form'
                                 $notifyUserVar3 = '$topForm.TopMost = $true #This makes the box always on top'
                                 $notifyUserVar4 = '$answer = [System.Windows.Forms.MessageBox]::Show($topForm, $var,$companyName + " ITS","yesno","Warning")' 
-                                $notifyUserVar5 = 'if($answer -eq "yes") {shutdown /a}'
+                                $notifyUserVar5 = 'if($answer -eq "yes") { shutdown -a'
+                                $notifyUserVar6 = 'start-sleep 10'
+                                $notifyUserVar7 = '$secondAnswer= [System.Windows.Forms.MessageBox]::Show($topForm,"Your computer will restart in 8 hours. To avoid this forced reboot, please manually restart your computer." ,$companyName + " ITS")'
+                                $notifyUserVar8 = 'shutdown /r /t 28800 /c "Your computer will restart in 8 hours."'
+                                $notifyUserVar9 = '}'
 
                                 $script1 = "
                                 #This script uninstalls the software. 
@@ -212,6 +216,11 @@ if ($ninjaParameter)
                                 $notifyUserVar3
                                 $notifyUserVar4
                                 $notifyUserVar5
+                                $notifyUserVar6
+                                $notifyUserVar7
+                                $notifyUserVar8
+                                $notifyUserVar9
+                                $notifyUserVar10
                                 "
                                 $script1 | out-file c:\scripts\notifyUser.ps1
 
