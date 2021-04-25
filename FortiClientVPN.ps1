@@ -30,7 +30,6 @@ $Update = ""
 
 #Pulls parameter from Ninja, if empty it just attempts to install, if you enter a parameter it will force updates if needed.
 $ninjaParameter = $args[0]
-$ninjaParameter = "Test"
 #Software Name
 $software = "FortiClient VPN"
 
@@ -47,7 +46,7 @@ $serverAddress = "vpn.orvistech.com"
 $companyName = "OrvisTech"
 
 #Minutes before shutdown
-$minutesBeforeShutdown = 15
+$minutesBeforeShutdown = 45
 
 #/////////////////////////
 #///////SETUP/////////////
@@ -61,8 +60,8 @@ Invoke-WebRequest "https://links.fortinet.com/forticlient/win/vpnagent" -OutFile
 $installed = (Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where { $_.DisplayName -eq $software }) -ne $null
 
 #getting newest version info
-#$version = get-childitem C:\ForticlientVPN.exe | foreach-object { [System.Diagnostics.FileVersionInfo]::GetVersionInfo($_).FileVersion }
-#$version = $version.Substring(0,3)
+$version = get-childitem C:\ForticlientVPN.exe | foreach-object { [System.Diagnostics.FileVersionInfo]::GetVersionInfo($_).FileVersion }
+$version = $version.Substring(0,3)
 
 #/////////////////////////
 #///////LAPTOPS///////////
@@ -101,7 +100,7 @@ if ($ninjaParameter)
                 {
                     $currentVersion = $obj.GetValue('DisplayVersion')
                     $currentVersion = $currentVersion.Substring(0,3)
-                    $version = "5.16"
+                    
                     if($currentVersion -eq $version)
                         {
                   
