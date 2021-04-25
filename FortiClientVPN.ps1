@@ -35,16 +35,16 @@ $ninjaParameter = "Test"
 $software = "FortiClient VPN"
 
 #Forticlient VPN connection name.
-$connectionName = "Geneva College VPN"
+$connectionName = "OrvisTech VPN"
 
 #Forticlient VPN description name.
-$description = "Geneva College VPN"
+$description = "OrvisTech VPN"
 
 #Forticlient VPN server address.
-$serverAddress = "gc-vpn.geneva.edu"
+$serverAddress = "vpm.orvistech.com"
 
 #company name.
-$companyName = "Geneva College"
+$companyName = "OrvisTech"
 
 #Minutes before shutdown
 $minutesBeforeShutdown = 15
