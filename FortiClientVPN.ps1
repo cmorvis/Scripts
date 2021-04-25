@@ -219,7 +219,6 @@ if ($ninjaParameter)
                                 $notifyUserVar7
                                 $notifyUserVar8
                                 $notifyUserVar9
-                                $notifyUserVar10
                                 "
                                 $script1 | out-file c:\scripts\notifyUser.ps1
 
