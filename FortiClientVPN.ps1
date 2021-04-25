@@ -41,7 +41,7 @@ $connectionName = "OrvisTech VPN"
 $description = "OrvisTech VPN"
 
 #Forticlient VPN server address.
-$serverAddress = "vpm.orvistech.com"
+$serverAddress = "vpn.orvistech.com"
 
 #company name.
 $companyName = "OrvisTech"
