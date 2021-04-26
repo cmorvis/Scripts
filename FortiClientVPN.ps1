@@ -71,7 +71,7 @@ $version = $version.Substring(0,3)
 #if (50 -lt $batteryLevel) {}
 
 #if there is a battery run this script
-if(!$batteryStatus ) 
+if($batteryStatus) 
 {
 
 #### installing web installer.
