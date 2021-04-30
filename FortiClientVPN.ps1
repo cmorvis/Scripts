@@ -5,10 +5,8 @@
 Author: Caleb M. Orvis
 Reason: Needed to install/upgrade Forticlient VPN using internet resources only. 
 Software: Forticlient VPN
-
 Notes: 
 Script must be run as system. 
-
 The Forticlient VPN web installer, dumps the offline installer in the C:\Windows\Temp folder if run as System.
 If the script is run as a different account, it will dump the installer in c:\users\user\appdata\temp\ thus breaking this script.  
 #>
@@ -16,11 +14,31 @@ If the script is run as a different account, it will dump the installer in c:\us
 #///////VARIABLES/////////
 #/////////////////////////
 
-#Gets battery Level, and inserts into variable.
-$batteryLevel = (Get-WmiObject win32_battery).estimatedChargeRemaining
+#please edit these variables to change to your company name. 
 
-#Sets battery varible with battery properties
-$battery = Get-WmiObject Win32_Battery
+#Pulls parameter from Ninja, if empty it just attempts to install, if you enter a parameter it will force updates if needed.
+$ninjaParameter = $args[0]
+
+#Software Name
+$software = "FortiClient VPN"
+
+#Forticlient VPN connection name.
+$connectionName = "Geneva College VPN"
+
+#Forticlient VPN description name.
+$description = "Geneva College VPN"
+#Forticlient VPN server address.
+$serverAddress = "gc-vpn.geneva.edu"
+#company name.
+$companyName = "Geneva College"
+#Minutes before shutdown forced shutdown. If user cancels shutdown, computer will force a shutdown in 8 hours. 
+$minutesBeforeShutdown = 15
+
+
+#/////////////////////////
+#///////SETUP/////////////
+#/////////////////////////
+
 
 #Sets batteryStatus variable with the batteries status. 
 $batteryStatus = $battery.BatteryStatus
@@ -28,31 +46,17 @@ $batteryStatus = $battery.BatteryStatus
 #clearing parameter 
 $Update = ""
 
-#Pulls parameter from Ninja, if empty it just attempts to install, if you enter a parameter it will force updates if needed.
-$ninjaParameter = $args[0]
-#Software Name
-$software = "FortiClient VPN"
+#Gets battery Level, and inserts into variable.
+$batteryLevel = (Get-WmiObject win32_battery).estimatedChargeRemaining
 
-#Forticlient VPN connection name.
-$connectionName = "OrvisTech VPN"
-
-#Forticlient VPN description name.
-$description = "OrvisTech VPN"
-
-#Forticlient VPN server address.
-$serverAddress = "vpn.orvistech.com"
-
-#company name.
-$companyName = "OrvisTech"
-
-#Minutes before shutdown
-$minutesBeforeShutdown = 45
-
-#/////////////////////////
-#///////SETUP/////////////
-#/////////////////////////
+#Sets battery varible with battery properties
+$battery = Get-WmiObject Win32_Battery
 $time = 0
-$install = 1
+$install = 0
+$tempConnectionName = $connectionName
+$tempDescription = $description
+$tempServerAddress = $serverAddress
+$tempCompanyName = $companyName
 #download installer
 Invoke-WebRequest "https://links.fortinet.com/forticlient/win/vpnagent" -OutFile C:\forticlientVPN.exe
 
@@ -71,22 +75,23 @@ $version = $version.Substring(0,3)
 #if (50 -lt $batteryLevel) {}
 
 #if there is a battery run this script
-if($batteryStatus) 
+if(!$batteryStatus) 
 {
 
 #### installing web installer.
-Start-Process C:\forticlientVPN.exe
+#Start-Process C:\forticlientVPN.exe
 
 while (get-process forticlientVPN -ErrorAction SilentlyContinue) 
 {
 Start-Sleep -S 1
 $time++ 
 }
-
+echo "web installer installed"
 
 #if a parameter has been passed from Ninja 
 if ($ninjaParameter)     
     { 
+    echo "ninjaParm passed"
 #checks if software is installed. If it is installed, it checks the version, if not it jumps to the installer script.   
      if ($installed) 
         { 
@@ -115,39 +120,18 @@ if ($ninjaParameter)
                                 echo "Uninstalling old version, and scheduling install on next reboot."
                                 C:\Windows\Temp\FortiClientVPN.exe /quiet /norestart /uninstall
                                 $update = 1
-                                Start-Sleep -s 30
+                                Start-Sleep -s 120
                        
                                 #how to pass variables into a script  $var = "`$var = `"$var`""
                         
                                 #### Creating a script: install_script.ps1 this script will run as System.
-                                $connectionName = "`$connectionName = `"$connectionName`""
-                                $description = "`$description = `"$description`""
-                                $serverAddress = "`$serverAddress = `"$serverAddress`""
                                 $install_scriptVar0 = 'cd "c:\Windows\Temp\"'
                                 $install_scriptVar1 = '.\FortiClientVPN.exe /quiet /norestart'
-                                $install_scriptVar2 = 'Start-Sleep -s 30'
-                                $install_scriptVar3 = 'New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\" -Name Tunnels'
-                                $install_scriptVar4 = 'New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\" -Name $connectionName' 
-                                $install_scriptVar5 = 'New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name promptcertificate -Value 0 -PropertyType DWORD' 
-                                $install_scriptVar6 = 'New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name promptusername -Value 1 -PropertyType DWORD' 
-                                $install_scriptVar7 = 'Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name "description" -value $description'
-                                $install_scriptVar8 = 'Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name "Server" -value $serverAddress'
-                                $install_scriptVar9 = 'schtasks /Delete /TN "installVPN" /F'
+                           
                                 $script1 = "
                                 #This script uninstalls the software. 
-                                $connectionName
-                                $description
-                                $serverAddress
                                 $install_scriptVar0
                                 $install_scriptVar1
-                                $install_scriptVar2
-                                $install_scriptVar3
-                                $install_scriptVar4
-                                $install_scriptVar5
-                                $install_scriptVar6
-                                $install_scriptVar7
-                                $install_scriptVar8
-                                $install_scriptVar9
                                 "
                                 mkdir c:\scripts
                                 $script1 | out-file c:\scripts\install_script.ps1
@@ -158,9 +142,58 @@ if ($ninjaParameter)
                                 $taskdescription = "Installs VPN on reboot"
                                 $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
                                   -Argument '-ep Bypass -NoProfile -WindowStyle Hidden -command "c:\scripts\install_script.ps1"'
-                                $trigger =  New-ScheduledTaskTrigger -AtStartup -RandomDelay (New-TimeSpan -minutes 3)
-                                $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 2) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+                                $trigger =  New-ScheduledTaskTrigger -AtStartup -RandomDelay (New-TimeSpan -minutes 1)
+                                $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 2) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries
+                                Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $taskname -Description $taskdescription -Settings $settings -User "System" 
+                                
+                                
+                                 #### Creating a script: configure_script.ps1 this script will run as System.
+                                $connectionName = "`$connectionName = `"$connectionName`""
+                                $description = "`$description = `"$description`""
+                                $serverAddress = "`$serverAddress = `"$serverAddress`""
+                                $delay = 'Start-Sleep -s 180'
+                                $install_scriptVar0 = 'New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\" -Name Tunnels'
+                                $install_scriptVar1 = 'New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\" -Name $connectionName' 
+                                $install_scriptVar2 = 'New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name promptcertificate -Value 0 -PropertyType DWORD' 
+                                $install_scriptVar3 = 'New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name promptusername -Value 1 -PropertyType DWORD' 
+                                $install_scriptVar4 = 'Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name "description" -value $description'
+                                $install_scriptVar5 = 'Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name "Server" -value $serverAddress'
+                                $install_scriptVar6 = 'schtasks /Delete /TN "installVPN" /F'
+                                $install_scriptVar7 = 'schtasks /Delete /TN "configureVPN" /F'
+                                $script1 = "
+                                #This script uninstalls the software. 
+                                $connectionName
+                                $description
+                                $serverAddress
+                                $delay
+                                $install_scriptVar0
+                                $install_scriptVar1
+                                $install_scriptVar2
+                                $install_scriptVar3
+                                $install_scriptVar4
+                                $install_scriptVar5
+                                $install_scriptVar6
+                                $install_scriptVar7
+                                
+                                "
+                                mkdir c:\scripts
+                                $script1 | out-file c:\scripts\configure_script.ps1
+
+                                #Creating a task to run configure_script.ps1.
+
+                                $taskname = "configureVPN"
+                                $taskdescription = "Configures VPN on reboot"
+                                $action = New-ScheduledTaskAction -Execute 'Powershell.exe' `
+                                  -Argument '-ep Bypass -NoProfile -WindowStyle Hidden -command "c:\scripts\configure_script.ps1"'
+                                $trigger =  New-ScheduledTaskTrigger -AtStartup -RandomDelay (New-TimeSpan -minutes 4)
+                                $settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit (New-TimeSpan -Minutes 4) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -AllowStartIfOnBatteries
                                 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName $taskname -Description $taskdescription -Settings $settings -User "System"
+                                
+                                
+                                
+                                
+                                
+                                
                                 
                                 
                                 #pulling custom time.
@@ -188,7 +221,7 @@ if ($ninjaParameter)
 
 
                                 Suspend-BitLocker -MountPoint "c:\" -RebootCount 1
-                                Start-Sleep -s 15
+                                Start-Sleep -s 30
                                 #### Creating a script: notifyUser.ps1
                                 $timeBeforeShutdown = "`$timeBeforeShutdown = `"$timeBeforeShutdown`""
                                 $measurementOfTime = "`$measurementOfTime = `"$measurementOfTime`""
@@ -241,29 +274,32 @@ if ($ninjaParameter)
                         
                         }
         }
-else { 
-
-
-
-echo "Attempting to install."
-If(!$installed -and $install -eq 1) 
+else 
 { 
+    $install = 1 
+}
+
+If(!$installed -and $install -eq 1) 
+{ echo "Attempting to install."
     #install here
-    MsiExec.exe /i "C:\Windows\Temp\FortiClientVPN.msi" /quiet /norestart
-                    
-    Start-Sleep -s 45
-    New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\" -Name Tunnels
-    New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\" -Name $connectionName
-    New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name promptcertificate -Value 0 -PropertyType DWORD
-    New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name promptusername -Value 1 -PropertyType DWORD
-    Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name "description" -value $description
-    Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$connectionName\" -Name "Server" -value $serverAddress
-    echo $version + " installed"
+    cd "C:\windows\Temp"
+    .\FortiClientVPN.exe /quiet /norestart
+    
+    Start-Sleep -s 200
+    New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\" -Name "Tunnels"
+    New-Item -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\" -Name $tempConnectionName
+    New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$tempConnectionName\" -Name promptcertificate -Value 0 -PropertyType DWORD
+    New-ItemProperty -Path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$tempConnectionName\" -Name promptusername -Value 1 -PropertyType DWORD
+    Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$tempConnectionName\" -Name "description" -value $tempDescription
+    Set-Itemproperty -path "HKLM:\SOFTWARE\Fortinet\FortiClient\Sslvpn\Tunnels\$tempConnectionName\" -Name "Server" -value $tempServerAddress
         
     echo "Installed latest version."    
 }
+else
+{
 echo "Latest version already installed"
-  
+} 
 }
+else
+{echo "desktop, exiting..."}
 
-}
