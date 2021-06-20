@@ -23,14 +23,14 @@ $ninjaParameter = $args[0]
 $software = "FortiClient VPN"
 
 #Forticlient VPN connection name.
-$connectionName = "Geneva College VPN"
+$connectionName = "company VPN"
 
 #Forticlient VPN description name.
-$description = "Geneva College VPN"
+$description = "company VPN"
 #Forticlient VPN server address.
-$serverAddress = "gc-vpn.geneva.edu"
+$serverAddress = "company.vpn.com"
 #company name.
-$companyName = "Geneva College"
+$companyName = "company"
 #Minutes before shutdown forced shutdown. If user cancels shutdown, computer will force a shutdown in 8 hours. 
 $minutesBeforeShutdown = 15
 
