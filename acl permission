@@ -1,0 +1,8 @@
+$user = $args[0]
+
+$acl = Get-Acl C:\iam
+
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("domain\$user","Modify","Allow")
+$acl.SetAccessRule($AccessRule) 
+$acl | Set-Acl C:\iam
+Get-ChildItem -Path "C:\iam" -Recurse -Force | Set-Acl -aclObject $acl -Verbose
