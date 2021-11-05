@@ -1,0 +1,25 @@
+ $RegKey =""
+$regPath = 'HKLM:\SYSTEM\ControlSet001\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\'
+foreach ($file in get-ChildItem "HKLM:\SYSTEM\ControlSet001\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\*") 
+    {
+
+        $RegKey = "$($file.name)"
+        $RegKey =  $RegKey -replace "HKEY_LOCAL_MACHINE", "HKLM:"
+        $currentRegKey = $RegKey
+        $RegKey = (get-ItemProperty  -path "$RegKey")
+        
+   $RegKey.PSObject.Properties | ForEach-Object {
+  If($_.Name -like '*EnableExtraPowerSaving*'){
+        Write-Host "Location: " $currentRegKey
+        Write-Host  "Previous Value: " $_.Name ' = ' $_.Value
+        set-Itemproperty  -path "$currentRegKey" -name  'EnableExtraPowerSaving' -value '0' 
+  }
+  If($_.Name -like '*SelectiveSuspend*'){
+    Write-Host "Location: " $currentRegKey
+    Write-Host "Previous Value: " $_.Name ' = ' $_.Value
+        set-Itemproperty  -path "$currentRegKey" -name  '*SelectiveSuspend' -value '0' 
+  }
+    
+}
+}
+
