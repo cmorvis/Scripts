@@ -1,0 +1,61 @@
+
+#Setting up vars that check file paths.
+$folderExists = Test-Path -LiteralPath "C:\Program Files\Wanova\Mirage Service"
+$installedStill = Test-Path -LiteralPath "C:\Program Files\Wanova\Mirage Service\task.cmd"
+$logsFolderExists = Test-Path -LiteralPath "C:\Program Files\Wanova\Mirage Service\logs"
+
+
+#checks if var folderExists is true, if its true it skips to the next if state, otherwise it jumps to the last else statement.
+if ($folderExists)
+{    
+
+   #checks to see if one of the program files exists.
+    if ($installedStill)
+        {
+                #If that file exists, then it runs the uninstall method. 
+                if(Uninstall-Package -Name "VMware Mirage Client")
+                { 
+                        Write-Output "SUCCESS -- software was installed, and has been uninstalled successfully"
+                        
+                        #Removes the folder path as it has logs etc.     
+                        Remove-Item -path "C:\Program Files\Wanova" -R
+                }
+                #if the file existed, but it didn't uninstall something is goofy about this computer, and it needs investigated. 
+                else {Write-Output "ERROR -- Software seemed to be installed, but failed to uninstall. Please check computer under the Wanova program files folder, to check for issues."}
+                                                                       
+
+        }
+# This else statement happens if the installer breaks, or the program had already been uninstalled without cleanup. 
+        else 
+        {
+      #checks to see if software is not installed. 
+        if (!$installedStill) 
+        {
+                #if it wasn't installed it states that the software wasn't insatlled. 
+                Write-Output "The software is not installed on this computer, but the folder existed."
+              
+                if($logsFolderExists)
+                {
+                        #if the software wasn't installed, but the logs folder exists, it removes it. 
+                        
+                       if(Remove-Item -path "C:\Program Files\Wanova" -R)
+                       {
+                        Write-Output "Logs folder existed, so we removed it."      
+                       }    
+                      #attempted to remove logs folder because it existed, but failed.
+                       else {Write-Output "ERROR -- Couldn't remove logs folder."}
+                } 
+                #the logs folder didn't exist.
+                else {"Write-Output Tried to remove logs folder but it didn't exist."}             
+        }
+        #Something went wrong with the install. 
+        else{ Write-Output "ERROR -- Software has not been removed successfully"}
+        }
+    
+}
+
+# This statement occurs if the Clients install path didn't exist. 
+else
+{
+Write-Output "VMware Mirage Client, is not installed on this machine."    
+}
