@@ -1,0 +1,107 @@
+#checks if can reach network folder
+$techfile = test-path -path "\Caleb's holding pen\Reports"
+
+#loading battery info.
+$battery = Get-WmiObject Win32_Battery
+$charging = $battery.BatteryStatus
+write-host $charging
+
+#ensuring script runs at random times. 
+$rnd = Get-Random -Minimum 1 -Maximum 120
+Start-Sleep -Seconds $rnd
+
+#checks to see if computer is on campus.
+if($techfile)
+{
+  write-host "Has Techfile"
+
+#checks to see if computer is plugged into the wall. 
+if($charging -ne 1)
+{
+  write-host "is charging"
+function Decode {
+    If ($args[0] -is [System.Array]) {
+        [System.Text.Encoding]::ASCII.GetString($args[0])
+    }
+    
+}
+#creates an empty array
+$computerInfo = [System.Collections.ArrayList]@()
+#gets model
+$model = (Get-WmiObject -Class:Win32_ComputerSystem).Model
+#gets computer name
+$computerName = [System.Net.Dns]::GetHostName()
+#$Date = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+#gets SN of laptop.
+$SN = Get-WmiObject -Class Win32_Bios | Select-Object -ExpandProperty SerialNumber
+#gets username
+$userName =  [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+
+#adding computer info to the array. 
+$arrayID = $computerInfo.add($computerName)
+$arrayID = $computerInfo.add($userName)
+$arrayID = $computerInfo.add($model)
+$arrayID = $computerInfo.add($SN)
+
+
+
+
+#looping through each monitor. 
+ForEach ($Monitor in Get-WmiObject WmiMonitorID -Namespace root\wmi) { 
+#pulling monitor info into user friendly vars 
+    $monitorName = Decode $Monitor.UserFriendlyName -notmatch 0
+    $monitorSerial = Decode $Monitor.SerialNumberID -notmatch 0
+    $monitorYearOfManufacture = $Monitor.YearOfManufacture 
+	
+    #inserting monitor info vars into array. 
+    $arrayID = $computerInfo.add($monitorName)
+    $arrayID = $computerInfo.add($monitorSerial)
+    $arrayID = $computerInfo.add($monitorYearOfManufacture)
+
+  
+  }
+    
+
+#pushing array into prep for CSV format. 
+$infoObject = New-Object PSObject
+
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "Computer Name" -Value $computerInfo[0]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "Username" -Value $computerInfo[1]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "Model" -Value $computerInfo[2]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "Serial Number" -Value $computerInfo[3]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "1 Monitor Name" -Value $computerInfo[4]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "1 Monitor Serial" -Value $computerInfo[5]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "1 Monitor Year" -Value $computerInfo[6]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "2 Monitor Name" -Value $computerInfo[7]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "2 Monitor Serial" -Value $computerInfo[8]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "2 Monitor Year" -Value $computerInfo[9]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "3 Monitor Name" -Value $computerInfo[10]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "3 Monitor Serial" -Value $computerInfo[11]
+Add-Member -InputObject $infoObject -MemberType NoteProperty -Name "3 Monitor Year" -Value $computerInfo[12]
+write-host "importing data"
+ 
+ #pulling CSV from techfile
+ $csv = "\\Caleb's holding pen\Reports\campus\report.csv"
+ $import = Import-Csv $csv
+ #Pulling computer names already in CSV 
+ $computer = $import | Select-Object -ExpandProperty 'Computer Name'
+ $computerName = [System.Net.Dns]::GetHostName()
+ #if there are computers in the csv.
+ if ($computer)
+ {
+   #if the computer has been done before.
+  if ($computer -match $computerName)
+  { 
+  write-host "Computer already added"
+  }
+  #if the computer has not been done before. 
+  else 
+  {
+  #push data into csv file. 
+  $infoObject | Export-Csv -Path $csv -Append
+  write-host "Computer added"
+  }
+  
+  }
+  }
+  }
