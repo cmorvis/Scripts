@@ -17,23 +17,11 @@ if platform.system() == 'Windows':
         #install cloc
         os.system('npm install -g cloc')
 if platform.system() == 'Linux':
-    #Didn't test on other platforms only ubuntu, so did not include exception handling for if it was already installed / if it doesn't use that package manager. 
-    os.system('npm install -g cloc')
-    os.system('sudo apt-get install python3')
-    os.system('sudo apt-get install cloc')
-    os.system('sudo apt-get install git')
-    os.system('sudo yum install cloc')
-    os.system('sudo yum install python3')
-    os.system('sudo yum install git')
-    os.system('sudo pacman -S cloc')
-    os.system('sudo pacman -S git')
-    os.system('sudo pacman -S python3')
-    os.system('sudo pkg install cloc')
-    os.system('sudo pkg install git')
-    os.system('sudo pkg install python3')
-    os.system('sudo port install cloc')
-    os.system('sudo port install git')
-    os.system('sudo port install python3')
+    #Just made it for debian
+    os.system('sudo apt-get install python3 >/dev/null')
+    os.system('sudo apt-get install cloc >/dev/null')
+    os.system('sudo apt-get install git >/dev/null')
+
     
 
 
@@ -52,13 +40,14 @@ except:
 
 #clone latest code from link given.
 os.system('git clone --depth 1 %s' %repo_link)
+
 #get current working directory 
 cwd = os.getcwd()
 if platform.system() == 'Windows':
     #combines that with the repo name
-    nwd = cwd + "/" + repo_name
+    nwd = cwd + "\\" + repo_name
     #uses cloc program to search repo.
-    cloc_command = 'cloc %s\\' %nwd
+    cloc_command = 'cloc %s' %nwd
     os.system('Powershell.exe $output = %s ; $output' %cloc_command)
 if platform.system() == 'Linux':
     
