@@ -17,18 +17,24 @@ if platform.system() == 'Windows':
         #install cloc
         os.system('npm install -g cloc')
 if platform.system() == 'Linux':
-    #Didn't test on other platforms, so did not include exception handling for if it was already installed. 
+    #Didn't test on other platforms only ubuntu, so did not include exception handling for if it was already installed / if it doesn't use that package manager. 
     os.system('npm install -g cloc')
+    os.system('sudo apt-get install python3')
     os.system('sudo apt-get install cloc')
     os.system('sudo apt-get install git')
     os.system('sudo yum install cloc')
+    os.system('sudo yum install python3')
     os.system('sudo yum install git')
     os.system('sudo pacman -S cloc')
     os.system('sudo pacman -S git')
+    os.system('sudo pacman -S python3')
     os.system('sudo pkg install cloc')
     os.system('sudo pkg install git')
+    os.system('sudo pkg install python3')
     os.system('sudo port install cloc')
     os.system('sudo port install git')
+    os.system('sudo port install python3')
+    
 
 
 #try repo name, if its block throw exception         
